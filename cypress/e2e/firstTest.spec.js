@@ -1,7 +1,6 @@
 ///<reference types ="cypress"/>
 
 
-
 describe ('First Test suite', ()=>{
 
     it ('First test',()=>{
@@ -205,7 +204,7 @@ describe ('First Test suite', ()=>{
     })
 
     // #27 list and drop down 
-    it.only('List and dropdown',() =>{
+    it('List and dropdown',() =>{
 
         cy.visit('/')
 
@@ -216,7 +215,6 @@ describe ('First Test suite', ()=>{
 
 
         // 2
-
         cy.get('nav nb-select').then(dropDown =>{
 
             cy.wrap(dropDown).click()
@@ -231,6 +229,110 @@ describe ('First Test suite', ()=>{
         })        
 
     })
+
+    //#28 table
+    it('Web tables',() =>{
+        cy.visit('/')
+        cy.contains('Tables & Data').click()
+        cy.contains('Smart Table').click()
+
+        //1 Get the row by text
+        cy.get ('tbody').contains('tr', 'Larry').then (tableRow => {
+            cy.wrap(tableRow).find('.nb-edit').click() // hace click en el icono de editar
+            cy.wrap(tableRow).find('[placeholder="Age"]').clear().type(33) /// limpia el tetfield y agrega la nueva edad
+            cy.wrap(tableRow).find('.nb-checkmark').click() // hace click para guardar el cambio
+            cy.wrap(tableRow).find('td').eq(6).should ('contain','33' ) // pregunta si es la edad esperada
+        })
+
+        cy.get ('tbody').contains('tr', '@jack').then (tableRow => {
+            cy.wrap(tableRow).find('.nb-edit').click() // hace click en el icono de editar
+            cy.wrap(tableRow).find('[placeholder="Username"]').clear().type('@gaho') /// limpia el tetfield y agrega la nueva edad
+            cy.wrap(tableRow).find('.nb-checkmark').click() // hace click para guardar el cambio
+            cy.wrap(tableRow).find('td').eq(4).should ('contain','@gaho' ) // pregunta si es la edad esperada
+        })
+
+        //2 Get row by index
+
+        cy.get ('thead').find('.nb-plus').click() 
+        cy.get('thead').find('tr').eq(2).then(tableRow=>{
+            cy.wrap(tableRow).find('[placeholder="First Name"]').type('Gaho')
+            cy.wrap(tableRow).find('[placeholder="Last Name"]').type('Ticona')
+            cy.wrap(tableRow).find('[placeholder="Username"]').type('@gahito')
+            cy.wrap(tableRow).find('[placeholder="E-mail"]').type('gahito@test.com') 
+            cy.wrap(tableRow).find('[placeholder="Age"]').type(18)
+            cy.wrap(tableRow).find('.nb-checkmark').click() 
+        })
+
+        cy.get('tbody tr').first().find('td').then(tableColumns =>{
+            cy.wrap(tableColumns).eq(2).should ('contain','Gaho' ) 
+            cy.wrap(tableColumns).eq(3).should ('contain','Ticona') 
+            cy.wrap(tableColumns).eq(4).should ('contain','@gahito' ) 
+            cy.wrap(tableColumns).eq(5).should ('contain','gahito@test.com' ) 
+            cy.wrap(tableColumns).eq(6).should ('contain','18' ) 
+
+        })
+        
+       
+
+        // #29 --3 Get each row validation .. validando el filtro de age
+        const age= [20,30,40,200] // edades que se filtraran en la columna age
+
+        cy.wrap(age).each(age =>{
+            cy.get('thead [placeholder="Age"]').clear().type(age)
+            cy.wait(500)
+            cy.get('tbody tr').each(tableRow => {
+
+                if (age==200){
+                    cy.wrap(tableRow).should('contain', 'No data found')
+
+                }else{
+                    cy.wrap(tableRow).find('td').eq(6).should('contain',age)
+                }
+               
+            })
+
+        })
+
+    })
+
+    // # 30 popups and tooltips
+    it('Tooltips',() =>{
+        cy.visit('/')
+           cy.contains('Modal & Overlays').click()
+           cy.contains('Tooltip').click()
+
+           cy.contains('nb-card', 'Colored Tooltips')
+                .contains('Default').click()
+            cy.get('nb-tooltip').should('contain', 'This is a tooltip')
+
+        })
+
+    it.only('dialog box',() =>{
+        cy.visit('/')
+        cy.contains('Tables & Data').click()
+        cy.contains('Smart').click()
+        
+        //1
+        // cy.get('tbody tr').first().find('.nb-trash').click()
+        // cy.on('window:confirm',(confirm)=>{
+        //         expect(confirm).to.equal('Are you sure you want to delete?')
+        //     })
+
+        // 2  
+        // const stub= cy.stub()
+        // cy.on('window:confirm',stub)
+        // cy.get('tbody tr').first().find('.nb-trash').click().then(()=>{
+        //     expect(stub.getCall(0)).to.be.calledWith('Are you sure you want to delete?')
+        // })
+        
+        // 3 como seleccionar cancel
+        cy.get('tbody tr').first().find('.nb-trash').click()
+        cy.on('window:confirm',()=> false)
+
+
+     })
+
+ 
 
     
 })
